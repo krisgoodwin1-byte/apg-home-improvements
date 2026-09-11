@@ -1,2 +1,1 @@
-# apg-home-improvements
-Preview site for APG Home Improvements (Peterborough bathrooms &amp; kitchens) — separate from other projects
+Preview site for APG Home Improvements. Not the live production domain. Source replica for client review.
