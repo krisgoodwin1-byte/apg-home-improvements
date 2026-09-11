@@ -1,0 +1,63 @@
+name: Decode binary images
+on:
+  push:
+    paths:
+      - '_image_b64/**'
+      - '.github/workflows/decode-images.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: decode-images
+  cancel-in-progress: false
+jobs:
+  decode:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Decode base64 images into images/
+        run: |
+          set -euo pipefail
+          mkdir -p images
+          python3 <<'PY'
+          import base64, json, pathlib
+          root = pathlib.Path('_image_b64')
+          out = pathlib.Path('images')
+          out.mkdir(exist_ok=True)
+          # single-file .b64
+          for p in sorted(root.glob('*.b64')):
+              name = p.name[:-4]
+              data = base64.b64decode(p.read_text().strip())
+              (out/name).write_bytes(data)
+              print(name, len(data))
+          # manifests with parts
+          for mpath in sorted(root.glob('*.manifest.json')):
+              meta = json.loads(mpath.read_text())
+              name = meta['name']
+              parts = meta['parts']
+              buf = []
+              for i in range(parts):
+                  part = root / f'{name}.part{i:02d}'
+                  buf.append(part.read_text().strip())
+              data = base64.b64decode(''.join(buf))
+              assert len(data) == meta['bytes'], (name, len(data), meta['bytes'])
+              (out/name).write_bytes(data)
+              print(name, len(data), 'from', parts, 'parts')
+          # remove probe if present
+          probe = out/'_probe.png'
+          if probe.exists():
+              probe.unlink()
+              print('removed _probe.png')
+          PY
+      - name: Commit decoded binaries
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images/
+          if git diff --staged --quiet; then
+            echo "No image changes"
+          else
+            git commit -m "Add decoded binary images for APG preview site"
+            git push
+          fi
