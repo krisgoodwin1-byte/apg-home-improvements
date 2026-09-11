@@ -1,0 +1,68 @@
+[
+  {
+    "name": "logo.png",
+    "bytes": 27634,
+    "sha256": "3f79d8fb37d5bba542d9b896a916da2f67537cf8e06144073b2ee714f6da018f",
+    "parts": 6
+  },
+  {
+    "name": "bath1.jpg",
+    "bytes": 38204,
+    "sha256": "b1de5d1a0c384ca60c3efb0aff89a355bb1ec59bcda101930b63f55a8dabbdce",
+    "parts": 8
+  },
+  {
+    "name": "bath2.jpg",
+    "bytes": 41087,
+    "sha256": "f811868a553010726b232097098765e66cb4c94c878c63363d400bbebe5c8814",
+    "parts": 8
+  },
+  {
+    "name": "bath3.jpg",
+    "bytes": 38278,
+    "sha256": "45006f7bb934127a7c490cd6e878cb804892d4e957a602c7034fc628e6e068cf",
+    "parts": 8
+  },
+  {
+    "name": "bath4.jpg",
+    "bytes": 47605,
+    "sha256": "d00322d3d9b9cf9e2eef3f593dd12703a53d214ae4c18794e5d2987e846fba96",
+    "parts": 10
+  },
+  {
+    "name": "bath5.jpg",
+    "bytes": 44215,
+    "sha256": "9ba692849753e8be3b64045754a2194d350c6c7c8491a540eb169acbe6f60765",
+    "parts": 9
+  },
+  {
+    "name": "bath6.jpg",
+    "bytes": 38248,
+    "sha256": "6584fc82c28235d9661e85334dd5d6490e09acdf50ce3ba4730003cdb37f1115",
+    "parts": 8
+  },
+  {
+    "name": "bath7.jpg",
+    "bytes": 38731,
+    "sha256": "d571acba05a06ab51607914e62ea9a0de2189cc75f9b2277bf4b275071269728",
+    "parts": 8
+  },
+  {
+    "name": "bath8.jpg",
+    "bytes": 36994,
+    "sha256": "08077c9f5a83b479e500d313b6226cec557d7ab59d656a4e4bb71afb878d2d9c",
+    "parts": 8
+  },
+  {
+    "name": "hero.jpg",
+    "bytes": 58918,
+    "sha256": "e2c2ddeae601c520dcbac18d42b59864c64120d2566171442af4bd912ea884e9",
+    "parts": 12
+  },
+  {
+    "name": "kitchen1.jpg",
+    "bytes": 42852,
+    "sha256": "0849b581e78fb2478ca26cea186ff941017b9dfbadab9ffc43e7dd840cc74ab1",
+    "parts": 9
+  }
+]
