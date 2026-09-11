@@ -1,26 +1,64 @@
-name: Deploy GitHub Pages
+name: Decode images and deploy Pages
 on:
   push:
     branches: [main]
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 jobs:
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Decode base64 image parts into images/
+        run: |
+          set -euo pipefail
+          python3 << 'PY'
+          import base64, json, hashlib
+          from pathlib import Path
+          b64dir = Path('_image_b64')
+          man = json.loads((b64dir / 'manifest.json').read_text())
+          outdir = Path('images')
+          outdir.mkdir(exist_ok=True)
+          for item in man:
+              name = item['name']
+              chunks = []
+              for i in range(item['parts']):
+                  p = b64dir / f'{name}.part{i:02d}'
+                  if not p.exists():
+                      raise SystemExit(f'missing {p}')
+                  chunks.append(p.read_text().strip())
+              raw = base64.b64decode(''.join(chunks))
+              if len(raw) != item['bytes']:
+                  raise SystemExit(f'{name} size {len(raw)} != {item["bytes"]}')
+              if hashlib.sha256(raw).hexdigest() != item['sha256']:
+                  raise SystemExit(f'{name} sha mismatch')
+              (outdir / name).write_bytes(raw)
+              print('ok', name, len(raw))
+          PY
+      - name: Commit images if needed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add images
+          if git diff --staged --quiet; then
+            echo "images unchanged"
+          else
+            git commit -m "Add decoded website images"
+            git push
+            git pull --rebase || true
+          fi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
       - id: deployment
         uses: actions/deploy-pages@v4
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
