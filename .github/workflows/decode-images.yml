@@ -20,34 +20,37 @@ jobs:
           set -euo pipefail
           mkdir -p images
           python3 <<'PY'
-          import base64, json, pathlib
+          import base64, json, pathlib, tarfile, io
           root = pathlib.Path('_image_b64')
           out = pathlib.Path('images')
           out.mkdir(exist_ok=True)
-          # single-file .b64
+          man = root / 'images.tar.manifest.json'
+          if man.exists():
+              meta = json.loads(man.read_text())
+              buf = ''.join((root / f"images.tar.part{i:02d}").read_text().strip() for i in range(meta['parts']))
+              data = base64.b64decode(buf)
+              assert len(data) == meta['bytes']
+              with tarfile.open(fileobj=io.BytesIO(data), mode='r') as tar:
+                  tar.extractall(out)
+              print('extracted tar', meta['bytes'])
           for p in sorted(root.glob('*.b64')):
               name = p.name[:-4]
               data = base64.b64decode(p.read_text().strip())
               (out/name).write_bytes(data)
               print(name, len(data))
-          # manifests with parts
           for mpath in sorted(root.glob('*.manifest.json')):
+              if mpath.name == 'images.tar.manifest.json':
+                  continue
               meta = json.loads(mpath.read_text())
               name = meta['name']
-              parts = meta['parts']
-              buf = []
-              for i in range(parts):
-                  part = root / f'{name}.part{i:02d}'
-                  buf.append(part.read_text().strip())
-              data = base64.b64decode(''.join(buf))
+              buf = ''.join((root / f"{name}.part{i:02d}").read_text().strip() for i in range(meta['parts']))
+              data = base64.b64decode(buf)
               assert len(data) == meta['bytes'], (name, len(data), meta['bytes'])
               (out/name).write_bytes(data)
-              print(name, len(data), 'from', parts, 'parts')
-          # remove probe if present
+              print(name, len(data), 'from', meta['parts'], 'parts')
           probe = out/'_probe.png'
           if probe.exists():
               probe.unlink()
-              print('removed _probe.png')
           PY
       - name: Commit decoded binaries
         run: |
